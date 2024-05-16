@@ -223,7 +223,7 @@ def _gen_uhf_response_sf(mf, mo_coeff=None, mo_occ=None, hermi=0,extype=0,\
     if mo_coeff is None: mo_coeff = mf.mo_coeff
     if mo_occ is None: mo_occ = mf.mo_occ
     mol = mf.mol
-    
+
     ni = numint2c.NumInt2C()
     ni.collinear = 'mcol'
     ni.collinear_samples = collinear_samples
@@ -240,7 +240,7 @@ def _gen_uhf_response_sf(mf, mo_coeff=None, mo_occ=None, hermi=0,extype=0,\
         'MultiGridFFTDF' == getattr(mf, 'with_df', None).__class__.__name__):
         raise NotImplementedError("Spin Flip TDDFT doesn't support pbc calculations.")
 
-    
+
     fxc = ni.cache_xc_kernel_sf(mol, mf.grids, mf.xc, mo_coeff, mo_occ, 1)[2]
     dm0 = None
 
@@ -263,7 +263,7 @@ def _gen_uhf_response_sf(mf, mo_coeff=None, mo_occ=None, hermi=0,extype=0,\
             if omega > 1e-10:  # For range separated Coulomb
                 vk += mf.get_k(mol, dm1, hermi, omega) * (alpha-hyb)
                 vkT+= mf.get_k(mol, dm1.transpose(0,1,3,2), hermi, omega) * (alpha-hyb)
-            
+
             vk1A_b2a,vk1A_a2b = vk
             vk1B_a2b,vk1B_b2a = vkT
             vk1 = numpy.asarray((vk1A_b2a,vk1A_a2b,vk1B_b2a,vk1B_a2b))
@@ -297,7 +297,7 @@ def _gen_uhf_tda_response_sf(mf, mo_coeff=None, mo_occ=None, hermi=0,\
         'MultiGridFFTDF' == getattr(mf, 'with_df', None).__class__.__name__):
         raise NotImplementedError("Spin Flip TDDFT doesn't support pbc calculations.")
 
-    
+
     fxc = ni.cache_xc_kernel_sf(mol, mf.grids, mf.xc, mo_coeff, mo_occ, 1)[2]
     dm0 = None
 

@@ -1862,7 +1862,7 @@ def nr_uks_fxc_sf(ni, mol, grids, xc_code, dm0, dms, relativity=0, hermi=0,rho0=
                     wvB_a2b = lib.einsum('bg,abg->ag',rho1b2a.conj(),_fxc*2.0)*weight
                     wv = numpy.array((wvA_b2a,wvA_a2b,wvB_b2a,wvB_a2b))
                 yield i, ao, mask, wv
-    
+
     ao_loc = mol.ao_loc_nr()
     cutoff = grids.cutoff * 1e2
     nbins = NBINS * 2 - int(NBINS * numpy.log(cutoff) / numpy.log(grids.cutoff))
@@ -1897,10 +1897,10 @@ def nr_uks_fxc_sf(ni, mol, grids, xc_code, dm0, dms, relativity=0, hermi=0,rho0=
             aow = _scale_ao_sparse(ao, wv[3], mask, ao_loc, out=aow)
             _dot_ao_ao_sparse(ao[0], aow, None, nbins, mask, pair_mask, ao_loc,
                               hermi=0, out=vmat[3,i])
-            
+
         # [(\nabla mu) nu + mu (\nabla nu)] * fxc_jb = ((\nabla mu) nu f_jb) + h.c.
         vmat = lib.hermi_sum(vmat.reshape(-1,nao,nao), axes=(0,2,1)).reshape(4,nset,nao,nao)
-        
+
     elif xctype == 'MGGA':
         assert not MGGA_DENSITY_LAPL
         ao_deriv = 1
@@ -1927,10 +1927,10 @@ def nr_uks_fxc_sf(ni, mol, grids, xc_code, dm0, dms, relativity=0, hermi=0,rho0=
             _dot_ao_ao_sparse(ao[0], aow, None, nbins, mask, pair_mask, ao_loc,
                               hermi=0, out=vmat[3,i])
             _tau_dot_sparse(ao, ao, wv[3,4], nbins, mask, pair_mask, ao_loc, out=v1[3,i])
-            
+
         vmat = lib.hermi_sum(vmat.reshape(-1,nao,nao), axes=(0,2,1)).reshape(4,nset,nao,nao)
         vmat += v1
-        
+
     if isinstance(dmb2a, numpy.ndarray) and dmb2a.ndim == 2:
         vmat = vmat[:,0]
     if vmat.dtype != dtype:
@@ -1966,7 +1966,7 @@ def nr_uks_fxc_sf_tda(ni, mol, grids, xc_code, dm0, dms, relativity=0, hermi=0,r
                     # *2.0 becausue kernel xx,yy parts.
                     wv = lib.einsum('bg,abg->ag',rho1sf,_fxc*2.0)*weight
                 yield i, ao, mask, wv
-    
+
     ao_loc = mol.ao_loc_nr()
     cutoff = grids.cutoff * 1e2
     nbins = NBINS * 2 - int(NBINS * numpy.log(cutoff) / numpy.log(grids.cutoff))
@@ -1985,10 +1985,10 @@ def nr_uks_fxc_sf_tda(ni, mol, grids, xc_code, dm0, dms, relativity=0, hermi=0,r
             aow = _scale_ao_sparse(ao, wv, mask, ao_loc, out=aow)
             _dot_ao_ao_sparse(ao[0], aow, None, nbins, mask, pair_mask, ao_loc,
                               hermi=0, out=vmat[i])
-            
+
         # [(\nabla mu) nu + mu (\nabla nu)] * fxc_jb = ((\nabla mu) nu f_jb) + h.c.
         vmat = lib.hermi_sum(vmat.reshape(-1,nao,nao), axes=(0,2,1)).reshape(nset,nao,nao)
-        
+
     elif xctype == 'MGGA':
         assert not MGGA_DENSITY_LAPL
         ao_deriv = 1
@@ -2000,10 +2000,10 @@ def nr_uks_fxc_sf_tda(ni, mol, grids, xc_code, dm0, dms, relativity=0, hermi=0,r
             _dot_ao_ao_sparse(ao[0], aow, None, nbins, mask, pair_mask, ao_loc,
                               hermi=0, out=vmat[i])
             _tau_dot_sparse(ao, ao, wv[4], nbins, mask, pair_mask, ao_loc, out=v1[i])
-            
+
         vmat = lib.hermi_sum(vmat.reshape(-1,nao,nao), axes=(0,2,1)).reshape(nset,nao,nao)
         vmat += v1
-        
+
     if isinstance(dms, numpy.ndarray) and dms.ndim == 2:
         vmat = vmat[:,0]
     if vmat.dtype != dtype:

@@ -124,7 +124,7 @@ def gen_tda_operation_sf(mf, fock_ao=None, wfnsym=None,extype=0):
     assert (mo_coeff[0].dtype == numpy.double)
     mo_energy = mf.mo_energy
     mo_occ = mf.mo_occ
-    
+
     if wfnsym is not None and mol.symmetry:
         raise NotImplementedError("UKS Spin Flip TDA/ TDDFT haven't taken symmetry\
                                       into account.")
@@ -151,10 +151,10 @@ def gen_tda_operation_sf(mf, fock_ao=None, wfnsym=None,extype=0):
         orbvb = mo_coeff[1][:,viridxb]
         orbov = (orboa,orbvb)
         ndim = (nocca,nvirb)
-        
+
         e_ia = (mo_energy[1][viridxb,None] - mo_energy[0][occidxa]).T
         hdiag = e_ia.ravel()
-        
+
     mem_now = lib.current_memory()[0]
     max_memory = max(2000, mf.max_memory*.8-mem_now)
     vresp = mf.gen_tda_response_sf(hermi=0, max_memory=max_memory)
@@ -408,10 +408,10 @@ def get_ab_sf(mf, mo_energy=None, mo_coeff=None, mo_occ=None,collinear_samples=2
     nvir_a = orbv_a.shape[1]
     nocc_b = orbo_b.shape[1]
     nvir_b = orbv_b.shape[1]
-    
+
     e_ia_b2a = (mo_energy[0][viridx_a,None] - mo_energy[1][occidx_b]).T
     e_ia_a2b = (mo_energy[1][viridx_b,None] - mo_energy[0][occidx_a]).T
-    
+
     a_b2a = numpy.diag(e_ia_b2a.ravel()).reshape(nocc_b,nvir_a,nocc_b,nvir_a)
     a_a2b = numpy.diag(e_ia_a2b.ravel()).reshape(nocc_a,nvir_b,nocc_a,nvir_b)
     b_b2a = numpy.zeros((nocc_b,nvir_a,nocc_a,nvir_b))
@@ -426,12 +426,12 @@ def get_ab_sf(mf, mo_energy=None, mo_coeff=None, mo_occ=None,collinear_samples=2
         eri_a_a2b = ao2mo.general(mol, [orbo_a,orbo_a,orbv_b,orbv_b], compact=False)
         eri_b_b2a = ao2mo.general(mol, [orbo_b,orbv_b,orbo_a,orbv_a], compact=False)
         eri_b_a2b = ao2mo.general(mol, [orbo_a,orbv_a,orbo_b,orbv_b], compact=False)
-        
+
         eri_a_b2a = eri_a_b2a.reshape(nocc_b,nocc_b,nvir_a,nvir_a)
         eri_a_a2b = eri_a_a2b.reshape(nocc_a,nocc_a,nvir_b,nvir_b)
         eri_b_b2a = eri_b_b2a.reshape(nocc_b,nvir_b,nocc_a,nvir_a)
         eri_b_a2b = eri_b_a2b.reshape(nocc_a,nvir_a,nocc_b,nvir_b)
-        
+
         a_b2a, a_a2b = a
         b_b2a, b_a2b = b
 
@@ -469,7 +469,7 @@ def get_ab_sf(mf, mo_energy=None, mo_coeff=None, mo_occ=None,collinear_samples=2
                 rho0a = make_rho(0, ao, mask, xctype)
                 rho0b = make_rho(1, ao, mask, xctype)
                 rho = (rho0a, rho0b)
-                
+
                 fxc = ni.cache_xc_kernel_sf(mol, mf.grids, mf.xc, mo_coeff, mo_occ, 1)[2]
                 wfxc = fxc[0,0] * weight
 
@@ -485,13 +485,13 @@ def get_ab_sf(mf, mo_energy=None, mo_coeff=None, mo_occ=None,collinear_samples=2
                 a_b2a += iajb
                 iajb = lib.einsum('ria,rjb->iajb', rho_ov_a2b, w_ov)
                 b_a2b += iajb
-                
+
                 w_ov = numpy.einsum('ria,r->ria', rho_ov_a2b, wfxc*2.0)
                 iajb = lib.einsum('ria,rjb->iajb', rho_ov_a2b, w_ov)
                 a_a2b += iajb
                 iajb = lib.einsum('ria,rjb->iajb', rho_ov_b2a, w_ov)
                 b_b2a += iajb
-                
+
         elif xctype == 'GGA':
             ao_deriv = 1
             for ao, mask, weight, coords \
@@ -501,7 +501,7 @@ def get_ab_sf(mf, mo_energy=None, mo_coeff=None, mo_occ=None,collinear_samples=2
                 rho = (rho0a, rho0b)
                 fxc = ni.cache_xc_kernel_sf(mol, mf.grids, mf.xc, mo_coeff, mo_occ, 1)[2]
                 wfxc = fxc * weight
-                
+
                 rho_o_a = lib.einsum('xrp,pi->xri', ao, orbo_a)
                 rho_v_a = lib.einsum('xrp,pi->xri', ao, orbv_a)
                 rho_o_b = lib.einsum('xrp,pi->xri', ao, orbo_b)
@@ -510,13 +510,13 @@ def get_ab_sf(mf, mo_energy=None, mo_coeff=None, mo_occ=None,collinear_samples=2
                 rho_ov_a2b = numpy.einsum('xri,ra->xria', rho_o_a, rho_v_b[0])
                 rho_ov_b2a[1:4] += numpy.einsum('ri,xra->xria', rho_o_b[0], rho_v_a[1:4])
                 rho_ov_a2b[1:4] += numpy.einsum('ri,xra->xria', rho_o_a[0], rho_v_b[1:4])
-                
+
                 w_ov = numpy.einsum('xyr,xria->yria', wfxc*2.0, rho_ov_b2a)
                 iajb = lib.einsum('xria,xrjb->iajb', w_ov, rho_ov_b2a)
                 a_b2a += iajb
                 iajb = lib.einsum('xria,xrjb->iajb', w_ov, rho_ov_a2b)
                 b_b2a += iajb
-                
+
                 w_ov = numpy.einsum('xyr,xria->yria', wfxc*2.0, rho_ov_a2b)
                 iajb = lib.einsum('xria,xrjb->iajb', w_ov, rho_ov_a2b)
                 a_a2b += iajb
@@ -550,13 +550,13 @@ def get_ab_sf(mf, mo_energy=None, mo_coeff=None, mo_occ=None,collinear_samples=2
                 tau_ov_a2b = numpy.einsum('xri,xra->ria', rho_oa[1:4], rho_vb[1:4]) * .5
                 rho_ov_b2a = numpy.vstack([rho_ov_b2a, tau_ov_b2a[numpy.newaxis]])
                 rho_ov_a2b = numpy.vstack([rho_ov_a2b, tau_ov_a2b[numpy.newaxis]])
-                
+
                 w_ov = numpy.einsum('xyr,xria->yria', wfxc*2.0, rho_ov_b2a)
                 iajb = lib.einsum('xria,xrjb->iajb', w_ov, rho_ov_b2a)
                 a_b2a += iajb
                 iajb = lib.einsum('xria,xrjb->iajb', w_ov, rho_ov_a2b)
                 b_b2a += iajb
-                
+
                 w_ov = numpy.einsum('xyr,xria->yria', wfxc*2.0, rho_ov_a2b)
                 iajb = lib.einsum('xria,xrjb->iajb', w_ov, rho_ov_a2b)
                 a_a2b += iajb
@@ -844,7 +844,7 @@ class TDBase(rhf.TDBase):
     def get_ab(self, mf=None):
         if mf is None: mf = self._scf
         return get_ab(mf)
-    
+
     @lib.with_doc(get_ab_sf.__doc__)
     def get_ab_sf(self, mf=None):
         if mf is None: mf = self._scf
@@ -1173,7 +1173,7 @@ class TDA_SF(TDBase):
             extype = self.extype
         else:
             self.extype = extype
-            
+
         if nstates is None:
             nstates = self.nstates
         else:
@@ -1182,7 +1182,7 @@ class TDA_SF(TDBase):
 
         vind, hdiag = self.gen_vind(self._scf,extype=extype)
         precond = hdiag
-        
+
         if x0 is None:
             x0 = self.init_guess0(self._scf, self.nstates,extype=extype)
 
@@ -1194,13 +1194,13 @@ class TDA_SF(TDBase):
                               max_cycle=self.max_cycle,
                               max_space=self.max_space,
                               verbose=log)
-                
+
         nmo = self._scf.mo_occ[0].size
         nocca = (self._scf.mo_occ[0]>0).sum()
         noccb = (self._scf.mo_occ[1]>0).sum()
         nvira = nmo - nocca
         nvirb = nmo - noccb
-        
+
         if self.extype==0:
             self.xy = [(xi[:noccb*nvira].reshape(noccb,nvira),  # X_alpha_beta
                         (0, 0))  # (Y_beta_alpha)

@@ -306,7 +306,7 @@ def mcfun_eval_xc_adapter(ni, xc_code, dim=0):
             dim=0, eval_xc_eff is for mc nocollinear case.add(),
             dim=1, eval_xc_eff_sf is for mc collinear sf tddft/ tda.
     '''
-    
+
     try:
         import mcfun
     except ImportError:
@@ -327,7 +327,7 @@ def mcfun_eval_xc_adapter(ni, xc_code, dim=0):
         def eval_xc_eff(xc_code, rho, deriv=1, omega=None, xctype=None,
                     verbose=None):
             return mcfun.eval_xc_eff_sf(
-                fn_eval_xc, rho, deriv, 
+                fn_eval_xc, rho, deriv,
                 collinear_samples=ni.collinear_samples, workers=nproc)
     return eval_xc_eff
 
@@ -663,14 +663,14 @@ class NumInt2C(lib.StreamObject, numint.LibXCMixin):
         else:
             ao_deriv = 0
         with_lapl = MGGA_DENSITY_LAPL
-            
+
         assert mo_coeff[0].ndim == 2
         assert spin == 1
-        
+
         nao = mo_coeff[0].shape[0]
         rhoa = []
         rhob = []
-        
+
         ni = numint.NumInt()
         for ao, mask, weight, coords \
                 in self.block_loop(mol, grids, nao, ao_deriv, max_memory=max_memory):
